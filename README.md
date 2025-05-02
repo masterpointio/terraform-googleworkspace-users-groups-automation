@@ -22,7 +22,7 @@ We recommend impersonating a Super Admin, which allows you to grant Admin privil
 
 Follow the provider [authentication setup instructions](https://github.com/hashicorp/terraform-provider-googleworkspace/blob/main/docs/index.md#google-workspace-provider).
 
-<!-- TODO(weston) - provide step by step instructiions for setting this up -->
+<!-- TODO(weston) - provide step by step instructions for setting this up -->
 
 Once you've finished the setup process, your provider block should look like this,
 
