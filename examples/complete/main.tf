@@ -27,7 +27,6 @@ provider "googleworkspace" {
 
 module "googleworkspace" {
   source = "../../"
-  # source = "git::https://github.com/weston-masterpoint/terraform-googleworkspace-users-groups.git"
 
   users = {
     "first.last@example.com" = {
