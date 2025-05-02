@@ -34,7 +34,8 @@ module "googleworkspace" {
       primary_email = "first.last@example.com"
       family_name   = "Last"
       given_name    = "First"
-      password      = "76d28d4cca70533479b7b4fdc25abf41" # echo -n "insecure-password-for-example" | md5
+      # echo -n "insecure-password-for-example" | md5
+      password      = "76d28d4cca70533479b7b4fdc25abf41" #  trunk-ignore(checkov/CKV_SECRET_6)
       hash_function = "MD5"
     }
   }
