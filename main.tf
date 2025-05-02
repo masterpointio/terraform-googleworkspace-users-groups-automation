@@ -4,6 +4,7 @@ resource "googleworkspace_user" "users" {
 
   aliases                        = each.value.aliases
   change_password_at_next_login  = each.value.change_password_at_next_login
+  hash_function                  = each.value.hash_function
   include_in_global_address_list = each.value.include_in_global_address_list
   ip_allowlist                   = each.value.ip_allowlist
   is_admin                       = each.value.is_admin

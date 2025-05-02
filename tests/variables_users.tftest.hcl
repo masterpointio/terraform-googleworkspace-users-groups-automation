@@ -174,6 +174,7 @@ run "hash_function_can_be_null_with_password_set" {
         family_name  = "Last"
         given_name   = "First"
         password     = "password123"
+        hash_function = null
       }
     }
   }

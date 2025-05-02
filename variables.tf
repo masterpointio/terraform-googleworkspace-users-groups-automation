@@ -1,10 +1,12 @@
 variable "users" {
+  # Optional values are set by provider defaults (except with array values)
   # https://registry.terraform.io/providers/hashicorp/googleworkspace/latest/docs/resources/user
+
   description = "List of users"
   type = map(object({
     # addresses
-    aliases : optional(list(string)),
-    archived : optional(bool),
+    aliases : optional(list(string), []),
+    archived : optional(bool, false),
     change_password_at_next_login : optional(bool),
     # custom_schemas
     # emails

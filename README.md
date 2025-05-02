@@ -8,7 +8,7 @@
 
 ## Purpose and Functionality
 
-This is a child-module for automating the management of Google Workspace users and groups.
+This is a [child-module](https://opentofu.org/docs/language/modules/#child-modules) for managing Google Workspace users, groups, and roles.
 
 ## Usage
 
@@ -139,8 +139,8 @@ Copyright © 2016-2025 [Masterpoint Consulting LLC](https://masterpoint.io/)
 [newsletter-url]: https://newsletter.masterpoint.io/
 [youtube-badge]: https://img.shields.io/badge/YouTube-Subscribe-D191BF?style=for-the-badge&logo=youtube&logoColor=white
 [youtube-url]: https://www.youtube.com/channel/UCeeDaO2NREVlPy9Plqx-9JQ
-[release-badge]: https://img.shields.io/github/v/release/masterpointio/terraform-module-googleworkspace-users-groups-automation?color=0E383A&label=Release&style=for-the-badge&logo=github&logoColor=white
-[latest-release]: https://github.com/masterpointio/terraform-module-googleworkspace-users-groups-automation/releases/latest
-[contributors-image]: https://contrib.rocks/image?repo=masterpointio/terraform-module-googleworkspace-users-groups-automation
-[contributors-url]: https://github.com/masterpointio/terraform-module-googleworkspace-users-groups-automation/graphs/contributors
-[issues-url]: https://github.com/masterpointio/terraform-module-googleworkspace-users-groups-automation/issues
+[release-badge]: https://img.shields.io/github/v/release/masterpointio/terraform-googleworkspace-users-groups-automation?color=0E383A&label=Release&style=for-the-badge&logo=github&logoColor=white
+[latest-release]: https://github.com/masterpointio/terraform-googleworkspace-users-groups-automation/releases/latest
+[contributors-image]: https://contrib.rocks/image?repo=masterpointio/terraform-googleworkspace-users-groups-automation
+[contributors-url]: https://github.com/masterpointio/terraform-googleworkspace-users-groups-automation/graphs/contributors
+[issues-url]: https://github.com/masterpointio/terraform-googleworkspace-users-groups-automation/issues
