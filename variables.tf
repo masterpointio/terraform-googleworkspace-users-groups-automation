@@ -80,9 +80,8 @@ variable "groups" {
   description = "List of groups"
   type = map(object({
     name : string,
-    # description : optional(string),
-    email : string,
     description : optional(string),
+    email : string,
     timeouts : optional(object({
       create : optional(string),
       update : optional(string),

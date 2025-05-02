@@ -22,6 +22,9 @@ resource "googleworkspace_user" "users" {
   lifecycle {
     ignore_changes = [
       password,
+      recovery_email,
+      recovery_phone,
+      suspended,
     ]
   }
 }

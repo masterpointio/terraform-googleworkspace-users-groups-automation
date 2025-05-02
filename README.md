@@ -28,8 +28,8 @@ Once you've finished the setup process, your provider block should look like thi
 
 ```hcl
 provider "googleworkspace" {
-  # use my_customer not your actual customer_id.
-  # Custom Schemas on the user object will fail if the customer_id is set to your actual customer_id.
+  # use 'my_customer', which is an alias that Google's API recognizes to reference your account's customerId.
+  # For example - Custom Schemas on the user object will fail if the customer_id is set to your actual customer_id.
   # For more details see: https://developers.google.com/workspace/admin/directory/reference/rest/v1/schemas/get
   customer_id = "my_customer"
 
@@ -49,33 +49,6 @@ provider "googleworkspace" {
 ## Example
 
 ```hcl
-terraform {
-  required_providers {
-    googleworkspace = {
-      source  = "hashicorp/googleworkspace"
-      version = "0.7.0"
-    }
-  }
-}
-
-provider "googleworkspace" {
-  # use 'my_customer', not your actual customer_id. Custom Schemas on the user
-  # object will fail if the customer_id is set to your actual customer_id.
-  # For more details see: https://developers.google.com/workspace/admin/directory/reference/rest/v1/schemas/get
-  customer_id = "my_customer"
-
-  credentials             = "/path/to/credentials/my-google-project-credentials-1234567890.json"
-  impersonated_user_email = "impersonated_user_email@example.com"
-
-  oauth_scopes = [
-    "https://www.googleapis.com/auth/admin.directory.group",
-    "https://www.googleapis.com/auth/admin.directory.user",
-    "https://www.googleapis.com/auth/admin.directory.userschema",
-    "https://www.googleapis.com/auth/apps.groups.settings",
-    "https://www.googleapis.com/auth/iam",
-  ]
-}
-
 module "googleworkspace" {
   source = "git::https://github.com/masterpointio/terraform-googleworkspace-users-groups-automation.git"
 
@@ -84,8 +57,7 @@ module "googleworkspace" {
       primary_email = "first.last@example.com"
       family_name   = "Last"
       given_name    = "First"
-      password      = "76d28d4cca70533479b7b4fdc25abf41" # echo -n "insecure-password-for-example" | md5
-      hash_function = "MD5"
+      password      = "example-password"
     }
   }
 }
