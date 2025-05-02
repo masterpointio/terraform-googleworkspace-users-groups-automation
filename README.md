@@ -14,11 +14,54 @@ This is a [child-module](https://opentofu.org/docs/language/modules/#child-modul
 
 ### Prerequisites (optional)
 
-TODO
+You will need to
 
 ### Step-by-Step Instructions
 
-TODO
+## Example
+
+```hcl
+terraform {
+  required_providers {
+    googleworkspace = {
+      source  = "hashicorp/googleworkspace"
+      version = "0.7.0"
+    }
+  }
+}
+
+provider "googleworkspace" {
+  # use 'my_customer', not your actual customer_id. Custom Schemas on the user
+  # object will fail if the customer_id is set to your actual customer_id.
+  # For more details see: https://developers.google.com/workspace/admin/directory/reference/rest/v1/schemas/get
+  customer_id = "my_customer"
+
+  credentials             = "/path/to/credentials/my-google-project-credentials-1234567890.json"
+  impersonated_user_email = "impersonated_user_email@example.com"
+
+  oauth_scopes = [
+    "https://www.googleapis.com/auth/admin.directory.group",
+    "https://www.googleapis.com/auth/admin.directory.user",
+    "https://www.googleapis.com/auth/admin.directory.userschema",
+    "https://www.googleapis.com/auth/apps.groups.settings",
+    "https://www.googleapis.com/auth/iam",
+  ]
+}
+
+module "googleworkspace" {
+  source = "git::https://github.com/weston-masterpoint/terraform-googleworkspace-users-groups.git"
+
+  users = {
+    "first.last@example.com" = {
+      primary_email = "first.last@example.com"
+      family_name   = "Last"
+      given_name    = "First"
+      password      = "76d28d4cca70533479b7b4fdc25abf41" # echo -n "insecure-password-for-example" | md5
+      hash_function = "MD5"
+    }
+  }
+}
+```
 
 <!-- prettier-ignore-start -->
 <!-- markdownlint-disable MD013 -->
@@ -73,7 +116,7 @@ TODO
 | <a name="input_stage"></a> [stage](#input\_stage) | ID element. Usually used to indicate role, e.g. 'prod', 'staging', 'source', 'build', 'test', 'deploy', 'release' | `string` | `null` | no |
 | <a name="input_tags"></a> [tags](#input\_tags) | Additional tags (e.g. `{'BusinessUnit': 'XYZ'}`).<br/>Neither the tag keys nor the tag values will be modified by this module. | `map(string)` | `{}` | no |
 | <a name="input_tenant"></a> [tenant](#input\_tenant) | ID element \_(Rarely used, not included by default)\_. A customer identifier, indicating who this instance of a resource is for | `string` | `null` | no |
-| <a name="input_users"></a> [users](#input\_users) | List of users | <pre>map(object({<br/>    # addresses<br/>    aliases : optional(list(string)),<br/>    archived : optional(bool),<br/>    change_password_at_next_login : optional(bool),<br/>    # custom_schemas<br/>    # emails<br/>    # external_ids<br/>    family_name : string,<br/>    given_name : string,<br/>    groups : optional(list(object({<br/>      group_id : string, # The value can be the group's email address, group alias, or the unique group ID.<br/>      delivery_settings : optional(string, "ALL_MAIL"),<br/>      role : optional(string, "MEMBER"),<br/>      type : optional(string, "USER"),<br/>    }))),<br/>    # ims<br/>    include_in_global_address_list : optional(bool),<br/>    ip_allowlist : optional(bool),<br/>    is_admin : optional(bool),<br/>    # keywords<br/>    # languages<br/>    # locations<br/>    org_unit_path : optional(string),<br/>    # organizations<br/>    # phones<br/>    # posix_accounts<br/>    primary_email : string,<br/>    recovery_email : optional(string),<br/>    recovery_phone : optional(string),<br/>    # relations<br/>    # ssh_public_keys<br/>    suspended : optional(bool),<br/>    # timeouts<br/>    # websites<br/><br/>    # User attributes with unique constraints<br/><br/>    # password and hash_function<br/>    # If a hashFunction is specified, the password must be a valid hash key.<br/>    # If it's not specified, the password should be in clear text and between<br/>    # 8–100 ASCII characters.<br/>    # https://developers.google.com/workspace/admin/directory/v1/guides/manage-users<br/>    hash_function : optional(string),<br/>    password : optional(string),<br/>  }))</pre> | `{}` | no |
+| <a name="input_users"></a> [users](#input\_users) | List of users | <pre>map(object({<br/>    # addresses<br/>    aliases : optional(list(string), []),<br/>    archived : optional(bool, false),<br/>    change_password_at_next_login : optional(bool),<br/>    # custom_schemas<br/>    # emails<br/>    # external_ids<br/>    family_name : string,<br/>    given_name : string,<br/>    groups : optional(list(object({<br/>      group_id : string, # The value can be the group's email address, group alias, or the unique group ID.<br/>      delivery_settings : optional(string, "ALL_MAIL"),<br/>      role : optional(string, "MEMBER"),<br/>      type : optional(string, "USER"),<br/>    }))),<br/>    # ims<br/>    include_in_global_address_list : optional(bool),<br/>    ip_allowlist : optional(bool),<br/>    is_admin : optional(bool),<br/>    # keywords<br/>    # languages<br/>    # locations<br/>    org_unit_path : optional(string),<br/>    # organizations<br/>    # phones<br/>    # posix_accounts<br/>    primary_email : string,<br/>    recovery_email : optional(string),<br/>    recovery_phone : optional(string),<br/>    # relations<br/>    # ssh_public_keys<br/>    suspended : optional(bool),<br/>    # timeouts<br/>    # websites<br/><br/>    # User attributes with unique constraints<br/><br/>    # password and hash_function<br/>    # If a hashFunction is specified, the password must be a valid hash key.<br/>    # If it's not specified, the password should be in clear text and between<br/>    # 8–100 ASCII characters.<br/>    # https://developers.google.com/workspace/admin/directory/v1/guides/manage-users<br/>    hash_function : optional(string),<br/>    password : optional(string),<br/>  }))</pre> | `{}` | no |
 
 ## Outputs
 

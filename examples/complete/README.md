@@ -1,19 +1,25 @@
-terraform {
-  required_providers {
-    googleworkspace = {
-      source  = "hashicorp/googleworkspace"
-      version = "0.7.0"
-    }
-  }
-}
+# Examples: Complete
 
+## Setup
+
+There are 2 provider authentication routes available,
+1 - authenticate a service account via API keys
+2 - authenticate using API keys and impersonate a real User with Super Admin privileges.
+
+We recommend impersonating a Super Admin, which allows you to grant Admin privileges to users (service Accounts cannot do this).
+
+Follow the provider [authentication setup instructions](https://github.com/hashicorp/terraform-provider-googleworkspace/blob/main/docs/index.md#google-workspace-provider).
+
+Once you've finished the setup process, your provider block should look like this,
+
+```hcl
 provider "googleworkspace" {
   # use my_customer not your actual customer_id.
   # Custom Schemas on the user object will fail if the customer_id is set to your actual customer_id.
   # For more details see: https://developers.google.com/workspace/admin/directory/reference/rest/v1/schemas/get
   customer_id = "my_customer"
 
-  credentials             = "/Users/my_user/Downloads/my-google-project-credentials-1234567890.json"
+  credentials = "/Users/my_user/Downloads/my-google-project-credentials-1234567890.json"
   impersonated_user_email = "my_impersonated_user_email@my_domain.com"
 
   oauth_scopes = [
@@ -24,18 +30,4 @@ provider "googleworkspace" {
     "https://www.googleapis.com/auth/iam",
   ]
 }
-
-module "googleworkspace" {
-  source = "../../"
-  # source = "git::https://github.com/weston-masterpoint/terraform-googleworkspace-users-groups.git"
-
-  users = {
-    "first.last@example.com" = {
-      primary_email = "first.last@example.com"
-      family_name   = "Last"
-      given_name    = "First"
-      password      = "76d28d4cca70533479b7b4fdc25abf41" # echo -n "insecure-password-for-example" | md5
-      hash_function = "MD5"
-    }
-  }
-}
+```

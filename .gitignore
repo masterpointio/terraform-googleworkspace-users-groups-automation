@@ -9,9 +9,12 @@
 # Local .terraform directories
 **/.terraform/*
 
+# Example terraform lock files
+examples/**/*.terraform.lock.hcl
+
 # Ignore the root .terraform.lock.hcl file (Child modules don't want this)
 .terraform.lock.hcl
-!examples/**/.terraform.lock.hcl
+# !examples/**/.terraform.lock.hcl
 
 # IDE/Editor settings
 **/.idea
@@ -44,3 +47,5 @@ backend.tf.json
 **/*.bak
 **/*.*swp
 **/.DS_Store
+
+
