@@ -21,10 +21,6 @@ locals {
   }
 }
 
-# output "group_members" {
-#   value = local.group_members
-# }
-
 resource "googleworkspace_user" "defaults" {
   # https://registry.terraform.io/providers/hashicorp/googleworkspace/latest/docs/resources/user
   for_each = var.users

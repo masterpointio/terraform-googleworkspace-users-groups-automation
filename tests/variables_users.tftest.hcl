@@ -6,13 +6,6 @@ mock_provider "googleworkspace" {
 # --- validate email address
 # -----------------------------------------------------------------------------
 
-variables {
-  default_user = {
-    primary_email = "first.last@example.com"
-    family_name  = "Last"
-    given_name   = "First"
-  }
-}
 
 run "email_success" {
   command = plan
