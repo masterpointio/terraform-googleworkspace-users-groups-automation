@@ -6,6 +6,14 @@ mock_provider "googleworkspace" {
 # --- validate email address
 # -----------------------------------------------------------------------------
 
+variables {
+  default_user = {
+    primary_email = "first.last@example.com"
+    family_name  = "Last"
+    given_name   = "First"
+  }
+}
+
 run "email_success" {
   command = plan
 
@@ -91,7 +99,6 @@ run "password_too_short" {
   expect_failures = [var.users]
 }
 
-
 run "password_too_long" {
   command = plan
 
@@ -175,6 +182,71 @@ run "hash_function_can_be_null_with_password_set" {
         given_name   = "First"
         password     = "password123"
         hash_function = null
+      }
+    }
+  }
+
+  expect_failures = [var.users]
+}
+
+
+# -----------------------------------------------------------------------------
+# --- validate groups
+# -----------------------------------------------------------------------------
+
+run "groups_member_success" {
+  command = plan
+
+  providers = {
+    googleworkspace = googleworkspace.mock
+  }
+
+  variables {
+    users = {
+      "first.last@example.com" = {
+        primary_email = "first.last@example.com"
+        family_name  = "Last"
+        given_name   = "First"
+        groups = {
+          "team" = {
+            role = "MEMBER"
+          }
+        }
+      }
+    }
+    groups = {
+      "team" = {
+        name = "Team"
+        email = "team@example.com"
+      }
+    }
+  }
+}
+
+run "groups_member_validate_group_role" {
+  command = plan
+
+  providers = {
+    googleworkspace = googleworkspace.mock
+  }
+
+  variables {
+    users = {
+      "first.last@example.com" = {
+        primary_email = "first.last@example.com"
+        family_name  = "Last"
+        given_name   = "First"
+        groups = {
+          "team" = {
+            role = "INVALID-ROLE"
+          }
+        }
+      }
+    }
+    groups = {
+      "team" = {
+        name = "Team"
+        email = "team@example.com"
       }
     }
   }

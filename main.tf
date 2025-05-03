@@ -14,7 +14,7 @@ locals {
       for user_key, user in local._user_with_groups : [
         for group_key, group in user.groups : merge(group, {
           user_primary_email = user.primary_email,
-          group_email        = googleworkspace_group.default[group_key].email
+          group_email        = googleworkspace_group.defaults[group_key].email
         })
       ]
     ]) : "${obj.group_email}/${obj.user_primary_email}" => obj
@@ -25,7 +25,7 @@ locals {
 #   value = local.group_members
 # }
 
-resource "googleworkspace_user" "default" {
+resource "googleworkspace_user" "defaults" {
   # https://registry.terraform.io/providers/hashicorp/googleworkspace/latest/docs/resources/user
   for_each = var.users
 
@@ -48,6 +48,7 @@ resource "googleworkspace_user" "default" {
 
   lifecycle {
     ignore_changes = [
+      languages,
       password,
       recovery_email,
       recovery_phone,
@@ -55,10 +56,10 @@ resource "googleworkspace_user" "default" {
     ]
   }
 
-  depends_on = [googleworkspace_group.default]
+  depends_on = [googleworkspace_group.defaults]
 }
 
-resource "googleworkspace_group" "default" {
+resource "googleworkspace_group" "defaults" {
   for_each = var.groups
 
   email       = each.value.email
@@ -71,19 +72,17 @@ resource "googleworkspace_group" "default" {
   }
 }
 
-resource "googleworkspace_group_settings" "default" {
+resource "googleworkspace_group_settings" "defaults" {
+  # https://registry.terraform.io/providers/hashicorp/googleworkspace/latest/docs/resources/group_settings
   for_each = local.group_settings
 
-  # required settings
-  email = each.value.email
-
-  # optional settings
   allow_external_members                 = each.value.allow_external_members
   allow_web_posting                      = each.value.allow_web_posting
   archive_only                           = each.value.archive_only
   custom_footer_text                     = each.value.custom_footer_text
   custom_reply_to                        = each.value.custom_reply_to
   default_message_deny_notification_text = each.value.default_message_deny_notification_text
+  email                                  = each.value.email
   enable_collaborative_inbox             = each.value.enable_collaborative_inbox
   include_custom_footer                  = each.value.include_custom_footer
   include_in_global_address_list         = each.value.include_in_global_address_list
@@ -105,20 +104,23 @@ resource "googleworkspace_group_settings" "default" {
   who_can_view_group                     = each.value.who_can_view_group
   who_can_view_membership                = each.value.who_can_view_membership
 
-  depends_on = [googleworkspace_group.default]
+  depends_on = [googleworkspace_group.defaults]
 }
 
-resource "googleworkspace_group_member" "default" {
+resource "googleworkspace_group_member" "user_to_groups" {
+  # https://registry.terraform.io/providers/hashicorp/googleworkspace/latest/docs/resources/group_member
   for_each = local.group_members
 
   group_id = each.value.group_email
   email    = each.value.user_primary_email
+  role     = upper(each.value.role)
+  type     = "USER"
 
   lifecycle {
     ignore_changes = [
-      delivery_settings,
+      delivery_settings, # ignore user changes to delivery settings
     ]
   }
 
-  depends_on = [googleworkspace_group.default, googleworkspace_user.default]
+  depends_on = [googleworkspace_group.defaults, googleworkspace_user.defaults]
 }

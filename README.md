@@ -89,10 +89,10 @@ module "googleworkspace" {
 
 | Name | Type |
 |------|------|
-| [googleworkspace_group.default](https://registry.terraform.io/providers/hashicorp/googleworkspace/latest/docs/resources/group) | resource |
-| [googleworkspace_group_member.default](https://registry.terraform.io/providers/hashicorp/googleworkspace/latest/docs/resources/group_member) | resource |
-| [googleworkspace_group_settings.default](https://registry.terraform.io/providers/hashicorp/googleworkspace/latest/docs/resources/group_settings) | resource |
-| [googleworkspace_user.default](https://registry.terraform.io/providers/hashicorp/googleworkspace/latest/docs/resources/user) | resource |
+| [googleworkspace_group.defaults](https://registry.terraform.io/providers/hashicorp/googleworkspace/latest/docs/resources/group) | resource |
+| [googleworkspace_group_member.user_to_groups](https://registry.terraform.io/providers/hashicorp/googleworkspace/latest/docs/resources/group_member) | resource |
+| [googleworkspace_group_settings.defaults](https://registry.terraform.io/providers/hashicorp/googleworkspace/latest/docs/resources/group_settings) | resource |
+| [googleworkspace_user.defaults](https://registry.terraform.io/providers/hashicorp/googleworkspace/latest/docs/resources/user) | resource |
 
 ## Inputs
 
