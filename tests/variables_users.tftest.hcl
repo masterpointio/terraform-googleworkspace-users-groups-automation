@@ -6,7 +6,6 @@ mock_provider "googleworkspace" {
 # --- validate email address
 # -----------------------------------------------------------------------------
 
-
 run "email_success" {
   command = plan
 
