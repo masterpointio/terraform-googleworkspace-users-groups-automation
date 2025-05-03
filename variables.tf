@@ -13,12 +13,11 @@ variable "users" {
     # external_ids
     family_name : string,
     given_name : string,
-    groups : optional(list(object({
-      group_id : string, # The value can be the group's email address, group alias, or the unique group ID.
-      delivery_settings : optional(string, "ALL_MAIL"),
+    groups : optional(map(object({
       role : optional(string, "MEMBER"),
+      delivery_settings : optional(string, "ALL_MAIL"),
       type : optional(string, "USER"),
-    }))),
+    })), {}),
     # ims
     include_in_global_address_list : optional(bool),
     ip_allowlist : optional(bool),
@@ -89,6 +88,35 @@ variable "groups" {
       create = null
       update = null
     }),
+    # https://registry.terraform.io/providers/hashicorp/googleworkspace/latest/docs/resources/group_settings
+    settings : optional(object({
+      allow_external_members : optional(bool),
+      allow_web_posting : optional(bool),
+      archive_only : optional(bool),
+      custom_footer_text : optional(string),
+      custom_reply_to : optional(string),
+      default_message_deny_notification_text : optional(string),
+      enable_collaborative_inbox : optional(bool),
+      include_custom_footer : optional(bool),
+      include_in_global_address_list : optional(bool),
+      is_archived : optional(bool),
+      members_can_post_as_the_group : optional(bool),
+      message_moderation_level : optional(string),
+      primary_language : optional(string),
+      reply_to : optional(string),
+      send_message_deny_notification : optional(bool),
+      spam_moderation_level : optional(string),
+      who_can_assist_content : optional(string),
+      who_can_contact_owner : optional(string),
+      who_can_discover_group : optional(string),
+      who_can_join : optional(string),
+      who_can_leave_group : optional(string),
+      who_can_moderate_content : optional(string),
+      who_can_moderate_members : optional(string),
+      who_can_post_message : optional(string),
+      who_can_view_group : optional(string),
+      who_can_view_membership : optional(string),
+    }), {}),
   }))
   default = {}
 
