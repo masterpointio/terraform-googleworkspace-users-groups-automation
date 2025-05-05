@@ -68,9 +68,9 @@ variable "users" {
   validation {
     condition = alltrue([
       for user in var.users :
-      user.password == null || (user.hash_function == "SHA-1" || user.hash_function == "MD5" || user.hash_function == "crypt")
+      user.password == null || (user.hash_function == "SHA-1" || user.hash_function == "MD5" || user.hash_function == "crypt" || user.hash_function == null)
     ])
-    error_message = "hash_function must be either 'SHA-1', 'MD5', or 'crypt' when password is provided"
+    error_message = "hash_function must be either 'SHA-1', 'MD5', 'crypt', or null when password is provided"
   }
 
   # validate group role
