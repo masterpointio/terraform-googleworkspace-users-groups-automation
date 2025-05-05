@@ -16,6 +16,9 @@ examples/**/*.terraform.lock.hcl
 .terraform.lock.hcl
 # !examples/**/.terraform.lock.hcl
 
+# Ignore the live-providers.tf file
+examples/**/live-provider.tf
+
 # IDE/Editor settings
 **/.idea
 **/*.iml
@@ -47,5 +50,6 @@ backend.tf.json
 **/*.bak
 **/*.*swp
 **/.DS_Store
+
 
 
