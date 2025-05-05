@@ -151,7 +151,7 @@ run "hash_function_invalid" {
         family_name  = "Last"
         given_name   = "First"
         password     = "password123"
-        hash_function = "INVALID-HASH"  # Invalid hash function
+        hash_function = "INVALID-HASH"  # intentionally invalid hash function
       }
     }
   }
@@ -177,8 +177,6 @@ run "hash_function_can_be_null_with_password_set" {
       }
     }
   }
-
-  expect_failures = [var.users]
 }
 
 

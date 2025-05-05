@@ -49,6 +49,8 @@ variable "users" {
     password : optional(string),
   }))
   default = {}
+
+  # validate primary email address
   validation {
     condition = alltrue(flatten([
       for user in var.users : [can(regex("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$", user.primary_email))]
@@ -56,6 +58,7 @@ variable "users" {
     error_message = "Invalid primary email address"
   }
 
+  # validate password length
   validation {
     condition = alltrue(flatten([
       for user in var.users : [
@@ -65,10 +68,18 @@ variable "users" {
     error_message = "Password must be between 8 and 100 characters when provided"
   }
 
+  # validate hash function
   validation {
     condition = alltrue([
       for user in var.users :
-      user.password == null || (user.hash_function == "SHA-1" || user.hash_function == "MD5" || user.hash_function == "crypt" || user.hash_function == null)
+      user.password == null || (
+        user.password != null && (
+          user.hash_function == "SHA-1" ||
+          user.hash_function == "MD5" ||
+          user.hash_function == "crypt" ||
+          user.hash_function == null
+        )
+      )
     ])
     error_message = "hash_function must be either 'SHA-1', 'MD5', 'crypt', or null when password is provided"
   }
