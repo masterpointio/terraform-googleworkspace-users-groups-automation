@@ -95,6 +95,19 @@ variable "users" {
     ]))
     error_message = "group role must be either 'member', 'owner', or 'manager'"
   }
+
+  # validate group member type
+  validation {
+    condition = alltrue(flatten([
+      for user in var.users : [
+        for group in values(try(user.groups, {})) : (
+          # Check if type is null (default) or one of the allowed values
+          group.type == null ? true : (upper(group.type) == "USER" || upper(group.type) == "GROUP" || upper(group.type) == "CUSTOMER")
+        )
+      ]
+    ]))
+    error_message = "group type must be either 'USER', 'GROUP', or 'CUSTOMER'"
+  }
 }
 
 variable "groups" {

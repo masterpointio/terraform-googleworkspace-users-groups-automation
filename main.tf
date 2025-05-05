@@ -110,7 +110,7 @@ resource "googleworkspace_group_member" "user_to_groups" {
   group_id = each.value.group_email
   email    = each.value.user_primary_email
   role     = upper(each.value.role)
-  type     = "USER"
+  type     = upper(each.value.type)
 
   lifecycle {
     ignore_changes = [
