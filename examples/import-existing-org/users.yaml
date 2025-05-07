@@ -1,0 +1,11 @@
+---
+_default_user: &default_user
+  is_admin: false
+  groups:
+    team: { role: member }
+
+first.last@example.com:
+  <<: *default_user
+  primary_email: first.last@example.com
+  family_name: Last
+  given_name: First
