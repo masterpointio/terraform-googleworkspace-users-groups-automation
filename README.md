@@ -49,7 +49,7 @@ provider "googleworkspace" {
 ## Example
 
 ```hcl
-module "googleworkspace" {
+module "googleworkspace_users_groups" {
   source = "git::https://github.com/masterpointio/terraform-googleworkspace-users-groups-automation.git"
 
   users = {
@@ -58,6 +58,21 @@ module "googleworkspace" {
       family_name   = "Last"
       given_name    = "First"
       password      = "example-password"
+      groups = {
+        "platform" = {
+          role = "member"
+        }
+      }
+    }
+  }
+
+  groups = {
+    "platform" = {
+      name     = "Platform"
+      email    = "platform@example.com"
+      settings = {
+        who_can_join = "ALL_IN_DOMAIN_CAN_JOIN"
+      }
     }
   }
 }
