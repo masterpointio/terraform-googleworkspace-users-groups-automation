@@ -19,4 +19,3 @@ team:
   is_admin: false
   settings:
     <<: *default_active_settings
-    primary_language: null
