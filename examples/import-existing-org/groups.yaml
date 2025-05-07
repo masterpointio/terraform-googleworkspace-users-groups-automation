@@ -15,7 +15,7 @@ _default_active_settings: &default_active_settings
 team:
   email: engineering@example.com
   name: Engineering Team
-  description: "Engineering Team that all technical employees are members of by default"
+  description: Engineering Team that all technical employees are members of by default
   is_admin: false
   settings:
     <<: *default_active_settings
