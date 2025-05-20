@@ -17,6 +17,7 @@ If you want to use this module with an existing Google Workspace, see the [impor
 ### Step-by-Step Instructions
 
 There are two provider authentication methods available:
+
 1. Authenticate using a Google Cloud service account key file.
 2. Authenticate using a Google Cloud service account key file and impersonate a real user with Super Admin privileges.
 

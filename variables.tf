@@ -84,19 +84,19 @@ variable "users" {
     error_message = "hash_function must be either 'SHA-1', 'MD5', 'crypt', or null when password is provided"
   }
 
-  # validate group role
+  # validate users.groups.[group_key].role
   validation {
     condition = alltrue(flatten([
       for user in var.users : [
         for group in values(try(user.groups, {})) : (
-          upper(group.role) == "MEMBER" || upper(group.role) == "OWNER" || upper(group.role) == "MANAGER"
+          group.role == null || contains(["MEMBER", "OWNER", "MANAGER"], upper(group.role))
         )
       ]
     ]))
     error_message = "group role must be either 'member', 'owner', or 'manager'"
   }
 
-  # validate group member type
+  # validate users.groups.[group_key].type
   validation {
     condition = alltrue(flatten([
       for user in var.users : [
