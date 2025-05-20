@@ -1,7 +1,5 @@
 # Changelog
 
-## [0.7.0](https://github.com/masterpointio/terraform-module-template/compare/v0.6.0...v0.7.0) (2025-05-07)
-
 
 ### Features
 

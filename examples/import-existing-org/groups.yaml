@@ -1,0 +1,21 @@
+---
+_default_active_settings: &default_active_settings
+  allow_external_members: false
+  allow_web_posting: true
+  archive_only: false
+  custom_roles_enabled_for_settings_to_be_merged: false
+  enable_collaborative_inbox: false
+  is_archived: false
+  primary_language: en_US
+  who_can_join: ALL_IN_DOMAIN_CAN_JOIN
+  who_can_assist_content: OWNERS_AND_MANAGERS
+  who_can_view_group: ALL_IN_DOMAIN_CAN_VIEW
+  who_can_view_membership: ALL_IN_DOMAIN_CAN_VIEW
+
+team:
+  email: engineering@example.com
+  name: Engineering Team
+  description: Engineering Team that all technical employees are members of by default
+  is_admin: false
+  settings:
+    <<: *default_active_settings
