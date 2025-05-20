@@ -8,27 +8,29 @@
 
 ## Purpose and Functionality
 
-This is a [child-module](https://opentofu.org/docs/language/modules/#child-modules) for managing Google Workspace users, groups, and roles.
+Use this [child module](https://opentofu.org/docs/language/modules/#child-modules) to manage Google Workspace users, groups, and roles.
+
+If you want to use this module with an existing Google Workspace, see the [import-existing-org](examples/import-existing-org) example, which demonstrates how to import your existing Google users and groups.
 
 ## Usage
 
 ### Step-by-Step Instructions
 
-There are 2 provider authentication routes available,
-1 - authenticate a service account via API keys
-2 - authenticate using API keys and impersonate a real User with Super Admin privileges.
+There are two provider authentication methods available:
+1. Authenticate using a Google Cloud service account key file.
+2. Authenticate using a Google Cloud service account key file and impersonate a real user with Super Admin privileges.
 
-We recommend impersonating a Super Admin, which allows you to grant Admin privileges to users (service Accounts cannot do this).
+We recommend method (2), impersonating a Super Admin, as this allows you to grant Admin privileges to users (service accounts cannot do this). To set this up, follow the [Domain-Wide Delegation authentication instructions](https://github.com/hashicorp/terraform-provider-googleworkspace/blob/main/docs/index.md#using-domain-wide-delegation).
 
 Follow the provider [authentication setup instructions](https://github.com/hashicorp/terraform-provider-googleworkspace/blob/main/docs/index.md#google-workspace-provider).
 
-Once you've finished the setup process, your provider block should look like this,
+Once you've completed the setup process, your provider block should look like this:
 
 ```hcl
 provider "googleworkspace" {
-  # use 'my_customer', which is an alias that Google's API recognizes to reference your account's customerId.
-  # User Custom Schemas (googleworkspace_user.custom_schemas) will fail if the customer_id is set to your actual customer_id.
-  # For more details see: https://developers.google.com/workspace/admin/directory/reference/rest/v1/schemas/get
+  # Use 'my_customer' as an alias for your account's customerId to ensure compatibility with Google's API
+  # For example, custom schemas on the user object will fail if the customer_id is set to your actual customer_id
+  # For more details: https://developers.google.com/workspace/admin/directory/reference/rest/v1/schemas/get
   customer_id = "my_customer"
 
   credentials             = "/path/to/credentials/my-google-project-credentials-1234567890.json"
