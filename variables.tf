@@ -113,7 +113,7 @@ variable "users" {
     error_message = "group type must be either 'USER', 'GROUP', or 'CUSTOMER'"
   }
 
-  # # validate that schema_values can be JSON encoded
+  # validate that schema_values's values can be JSON encoded (required by Google Workspace provider)
   validation {
     condition = alltrue(flatten([
       for user in var.users : [
