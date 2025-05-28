@@ -51,7 +51,8 @@ provider "googleworkspace" {
 
 ```hcl
 module "googleworkspace_users_groups" {
-  source = "git::https://github.com/masterpointio/terraform-googleworkspace-users-groups-automation.git"
+  source = "https://github.com/masterpointio/users-groups-automation/googleworkspace"
+  version = "X.X.X"
 
   users = {
     "first.last@example.com" = {
