@@ -113,18 +113,6 @@ variable "users" {
     error_message = "group type must be either 'USER', 'GROUP', or 'CUSTOMER'"
   }
 
-  # # validate custom schemas
-  # validation {
-  #   condition = alltrue(flatten([
-  #     for user in var.users : [
-  #       for schema in user.custom_schemas : [
-  #         can(regex("^[a-zA-Z][a-zA-Z0-9_-]*$", schema.schema_name))
-  #       ]
-  #     ]
-  #   ]))
-  #   error_message = "Custom schema name must start with a letter and contain only alphanumeric characters, underscores, and hyphens"
-  # }
-
   # # validate that schema_values can be JSON encoded
   validation {
     condition = alltrue(flatten([
