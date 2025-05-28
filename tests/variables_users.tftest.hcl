@@ -179,6 +179,42 @@ run "hash_function_can_be_null_with_password_set" {
   }
 }
 
+# -----------------------------------------------------------------------------
+# --- validate custom schemas
+# -----------------------------------------------------------------------------
+
+
+run "custom_schemas_success" {
+  command = plan
+
+  providers = {
+    googleworkspace = googleworkspace.mock
+  }
+
+  variables {
+    users = {
+      "first.last@example.com" = {
+        primary_email = "first.last@example.com"
+        family_name  = "Last"
+        given_name   = "First"
+        custom_schemas = [
+          {
+            schema_name = "AWS_SSO_for_Client123"
+            schema_values = {
+              "Role" = "[\"arn:aws:iam::111111111111:role/GoogleAppsAdmin\",\"arn:aws:iam::111111111111:saml-provider/GoogleApps\"]"
+            }
+          },
+          {
+            schema_name = "AWS_SSO_for_Client456"
+            schema_values = {
+              "Role" = "[\"arn:aws:iam::222222222222:role/xyz-identity-reader,arn:aws:iam::222222222222:saml-provider/xyz-identity-acme-gsuite\", \"arn:aws:iam::222222222222:role/xyz-identity-admin,arn:aws:iam::222222222222:saml-provider/xyz-identity-acme-gsuite\"]"
+            }
+          }
+        ]
+      }
+    }
+  }
+}
 
 # -----------------------------------------------------------------------------
 # --- validate groups
