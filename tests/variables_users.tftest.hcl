@@ -185,7 +185,7 @@ run "hash_function_can_be_null_with_password_set" {
 
 
 run "custom_schemas_success" {
-  command = plan
+  command = apply
 
   providers = {
     googleworkspace = googleworkspace.mock
@@ -213,6 +213,66 @@ run "custom_schemas_success" {
         ]
       }
     }
+  }
+
+  # test that the rendered value is an encoded json string
+  assert {
+    condition = googleworkspace_user.defaults["first.last@example.com"].custom_schemas[1].schema_values["Role"] == "[\"arn:aws:iam::222222222222:role/xyz-identity-reader,arn:aws:iam::222222222222:saml-provider/xyz-identity-acme-gsuite\", \"arn:aws:iam::222222222222:role/xyz-identity-admin,arn:aws:iam::222222222222:saml-provider/xyz-identity-acme-gsuite\"]"
+    error_message = "Expected rendered value to be encoded json string, got: ${googleworkspace_user.defaults["first.last@example.com"].custom_schemas[1].schema_values["Role"]}"
+  }
+}
+
+run "custom_schemas_output_verification" {
+  command = apply
+
+  providers = {
+    googleworkspace = googleworkspace.mock
+  }
+
+  variables {
+    users = {
+      "schema.test@example.com" = {
+        primary_email = "schema.test@example.com"
+        family_name  = "Test"
+        given_name   = "Schema"
+        custom_schemas = [
+          {
+            schema_name = "AWS_SSO_Test"
+            schema_values = {
+              "Role" = "[\"arn:aws:iam::111111111111:role/TestRole\"]"
+              "OtherKey" = "OtherValue"
+            }
+          },
+          {
+            schema_name = "Artibitrarily_Data"
+            schema_values = {
+              "ABC" = "123"
+              "DEF" = "456"
+            }
+          }
+        ]
+      }
+    }
+  }
+
+  assert {
+    condition = googleworkspace_user.defaults["schema.test@example.com"].custom_schemas[0].schema_name == "AWS_SSO_Test"
+    error_message = "Expected schema name 'AWS_SSO_Test', got: ${googleworkspace_user.defaults["schema.test@example.com"].custom_schemas[0].schema_name}"
+  }
+
+  assert {
+    condition = googleworkspace_user.defaults["schema.test@example.com"].custom_schemas[0].schema_values["Role"] == "[\"arn:aws:iam::111111111111:role/TestRole\"]"
+    error_message = "Expected Role value to match, got: ${googleworkspace_user.defaults["schema.test@example.com"].custom_schemas[0].schema_values["Role"]}"
+  }
+
+  assert {
+    condition = googleworkspace_user.defaults["schema.test@example.com"].custom_schemas[0].schema_values["OtherKey"] == "OtherValue"
+    error_message = "Expected OtherKey value to be 'OtherValue', got: ${googleworkspace_user.defaults["schema.test@example.com"].custom_schemas[0].schema_values["OtherKey"]}"
+  }
+
+  assert {
+    condition = googleworkspace_user.defaults["schema.test@example.com"].custom_schemas[1].schema_name == "Artibitrarily_Data"
+    error_message = "Expected custom_schemas's input order to match output order"
   }
 }
 
