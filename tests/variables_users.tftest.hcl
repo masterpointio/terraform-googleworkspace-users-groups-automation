@@ -345,6 +345,46 @@ run "group_member_type_default_success" {
   }
 }
 
+run "group_member_role_and_type_are_captilized" {
+  command = apply
+
+  providers = {
+    googleworkspace = googleworkspace.mock
+  }
+
+  variables {
+    users = {
+      "user.type@example.com" = {
+        primary_email = "user.type@example.com"
+        family_name  = "Type"
+        given_name   = "User"
+        groups = {
+          "test-group" = {
+            role = "member"
+            type = "user"
+          }
+        }
+      }
+    }
+    groups = {
+      "test-group" = {
+        name  = "Test Group"
+        email = "test-group@example.com"
+      }
+    }
+  }
+
+  assert {
+    condition = googleworkspace_group_member.user_to_groups["test-group@example.com/user.type@example.com"].role == "MEMBER"
+    error_message = "Expected role to be capitalized to 'MEMBER', got: ${googleworkspace_group_member.user_to_groups["test-group@example.com/user.type@example.com"].role}"
+  }
+
+  assert {
+    condition = googleworkspace_group_member.user_to_groups["test-group@example.com/user.type@example.com"].type == "USER"
+    error_message = "Expected type to be capitalized to 'USER', got: ${googleworkspace_group_member.user_to_groups["test-group@example.com/user.type@example.com"].type}"
+  }
+}
+
 run "group_member_type_invalid" {
   command = plan
 
