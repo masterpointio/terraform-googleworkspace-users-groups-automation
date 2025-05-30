@@ -51,7 +51,7 @@ provider "googleworkspace" {
 
 ```hcl
 module "googleworkspace_users_groups" {
-  source = "https://github.com/masterpointio/users-groups-automation/googleworkspace"
+  source = "masterpointio/users-groups-automation/googleworkspace"
   version = "X.X.X"
 
   users = {
