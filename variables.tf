@@ -8,7 +8,10 @@ variable "users" {
     aliases : optional(list(string), []),
     archived : optional(bool, false),
     change_password_at_next_login : optional(bool),
-    # custom_schemas
+    custom_schemas : optional(list(object({
+      schema_name : string,
+      schema_values : optional(map(string), {}),
+    })), []),
     # emails
     # external_ids
     family_name : string,
@@ -108,6 +111,18 @@ variable "users" {
       ]
     ]))
     error_message = "group type must be either 'USER', 'GROUP', or 'CUSTOMER'"
+  }
+
+  # validate that schema_values's values can be JSON encoded (required by Google Workspace provider)
+  validation {
+    condition = alltrue(flatten([
+      for user in var.users : [
+        for schema in user.custom_schemas : [
+          for key, value in schema.schema_values : can(jsonencode(value))
+        ]
+      ]
+    ]))
+    error_message = "All values in custom schema values must be JSON encodable strings"
   }
 }
 

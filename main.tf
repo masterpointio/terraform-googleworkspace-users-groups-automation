@@ -42,6 +42,14 @@ resource "googleworkspace_user" "defaults" {
   recovery_phone = each.value.recovery_phone
   suspended      = each.value.suspended
 
+  dynamic "custom_schemas" {
+    for_each = lookup(each.value, "custom_schemas", [])
+    content {
+      schema_name   = custom_schemas.value.schema_name
+      schema_values = custom_schemas.value.schema_values
+    }
+  }
+
   lifecycle {
     ignore_changes = [
       languages,

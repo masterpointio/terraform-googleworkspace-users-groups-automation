@@ -29,6 +29,20 @@ module "googleworkspace" {
           role = "MEMBER"
         }
       }
+      custom_schemas = [
+        {
+          schema_name = "AWS_SSO_for_Client123"
+          schema_values = {
+            "Role" = "[\"arn:aws:iam::111111111111:role/GoogleAppsAdmin\",\"arn:aws:iam::111111111111:saml-provider/GoogleApps\"]"
+          }
+        },
+        {
+          schema_name = "AWS_SSO_for_Client456"
+          schema_values = {
+            "Role" = "[\"arn:aws:iam::222222222222:role/xyz-identity-reader,arn:aws:iam::222222222222:saml-provider/xyz-identity-acme-gsuite\", \"arn:aws:iam::222222222222:role/xyz-identity-admin,arn:aws:iam::222222222222:saml-provider/xyz-identity-acme-gsuite\"]"
+          }
+        }
+      ]
     }
   }
 

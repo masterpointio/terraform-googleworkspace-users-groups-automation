@@ -179,6 +179,102 @@ run "hash_function_can_be_null_with_password_set" {
   }
 }
 
+# -----------------------------------------------------------------------------
+# --- validate custom schemas
+# -----------------------------------------------------------------------------
+
+
+run "custom_schemas_success" {
+  command = apply
+
+  providers = {
+    googleworkspace = googleworkspace.mock
+  }
+
+  variables {
+    users = {
+      "first.last@example.com" = {
+        primary_email = "first.last@example.com"
+        family_name  = "Last"
+        given_name   = "First"
+        custom_schemas = [
+          {
+            schema_name = "AWS_SSO_for_Client123"
+            schema_values = {
+              "Role" = "[\"arn:aws:iam::111111111111:role/GoogleAppsAdmin\",\"arn:aws:iam::111111111111:saml-provider/GoogleApps\"]"
+            }
+          },
+          {
+            schema_name = "AWS_SSO_for_Client456"
+            schema_values = {
+              "Role" = "[\"arn:aws:iam::222222222222:role/xyz-identity-reader,arn:aws:iam::222222222222:saml-provider/xyz-identity-acme-gsuite\", \"arn:aws:iam::222222222222:role/xyz-identity-admin,arn:aws:iam::222222222222:saml-provider/xyz-identity-acme-gsuite\"]"
+            }
+          }
+        ]
+      }
+    }
+  }
+
+  # test that the rendered value is an encoded json string
+  assert {
+    condition = googleworkspace_user.defaults["first.last@example.com"].custom_schemas[1].schema_values["Role"] == "[\"arn:aws:iam::222222222222:role/xyz-identity-reader,arn:aws:iam::222222222222:saml-provider/xyz-identity-acme-gsuite\", \"arn:aws:iam::222222222222:role/xyz-identity-admin,arn:aws:iam::222222222222:saml-provider/xyz-identity-acme-gsuite\"]"
+    error_message = "Expected rendered value to be encoded json string, got: ${googleworkspace_user.defaults["first.last@example.com"].custom_schemas[1].schema_values["Role"]}"
+  }
+}
+
+run "custom_schemas_output_verification" {
+  command = apply
+
+  providers = {
+    googleworkspace = googleworkspace.mock
+  }
+
+  variables {
+    users = {
+      "schema.test@example.com" = {
+        primary_email = "schema.test@example.com"
+        family_name  = "Test"
+        given_name   = "Schema"
+        custom_schemas = [
+          {
+            schema_name = "AWS_SSO_Test"
+            schema_values = {
+              "Role" = "[\"arn:aws:iam::111111111111:role/TestRole\"]"
+              "OtherKey" = "OtherValue"
+            }
+          },
+          {
+            schema_name = "Artibitrarily_Data"
+            schema_values = {
+              "ABC" = "123"
+              "DEF" = "456"
+            }
+          }
+        ]
+      }
+    }
+  }
+
+  assert {
+    condition = googleworkspace_user.defaults["schema.test@example.com"].custom_schemas[0].schema_name == "AWS_SSO_Test"
+    error_message = "Expected schema name 'AWS_SSO_Test', got: ${googleworkspace_user.defaults["schema.test@example.com"].custom_schemas[0].schema_name}"
+  }
+
+  assert {
+    condition = googleworkspace_user.defaults["schema.test@example.com"].custom_schemas[0].schema_values["Role"] == "[\"arn:aws:iam::111111111111:role/TestRole\"]"
+    error_message = "Expected Role value to match, got: ${googleworkspace_user.defaults["schema.test@example.com"].custom_schemas[0].schema_values["Role"]}"
+  }
+
+  assert {
+    condition = googleworkspace_user.defaults["schema.test@example.com"].custom_schemas[0].schema_values["OtherKey"] == "OtherValue"
+    error_message = "Expected OtherKey value to be 'OtherValue', got: ${googleworkspace_user.defaults["schema.test@example.com"].custom_schemas[0].schema_values["OtherKey"]}"
+  }
+
+  assert {
+    condition = googleworkspace_user.defaults["schema.test@example.com"].custom_schemas[1].schema_name == "Artibitrarily_Data"
+    error_message = "Expected custom_schemas's input order to match output order"
+  }
+}
 
 # -----------------------------------------------------------------------------
 # --- validate groups
@@ -306,6 +402,46 @@ run "group_member_type_default_success" {
         email = "test-group@example.com"
       }
     }
+  }
+}
+
+run "group_member_role_and_type_are_captilized" {
+  command = apply
+
+  providers = {
+    googleworkspace = googleworkspace.mock
+  }
+
+  variables {
+    users = {
+      "user.type@example.com" = {
+        primary_email = "user.type@example.com"
+        family_name  = "Type"
+        given_name   = "User"
+        groups = {
+          "test-group" = {
+            role = "member"
+            type = "user"
+          }
+        }
+      }
+    }
+    groups = {
+      "test-group" = {
+        name  = "Test Group"
+        email = "test-group@example.com"
+      }
+    }
+  }
+
+  assert {
+    condition = googleworkspace_group_member.user_to_groups["test-group@example.com/user.type@example.com"].role == "MEMBER"
+    error_message = "Expected role to be capitalized to 'MEMBER', got: ${googleworkspace_group_member.user_to_groups["test-group@example.com/user.type@example.com"].role}"
+  }
+
+  assert {
+    condition = googleworkspace_group_member.user_to_groups["test-group@example.com/user.type@example.com"].type == "USER"
+    error_message = "Expected type to be capitalized to 'USER', got: ${googleworkspace_group_member.user_to_groups["test-group@example.com/user.type@example.com"].type}"
   }
 }
 
