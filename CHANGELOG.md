@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.0](https://github.com/masterpointio/terraform-googleworkspace-users-groups-automation/compare/v0.1.0...v0.2.0) (2025-06-06)
+
+
+### Features
+
+* add user custom schemas ([#6](https://github.com/masterpointio/terraform-googleworkspace-users-groups-automation/issues/6)) ([4f47941](https://github.com/masterpointio/terraform-googleworkspace-users-groups-automation/commit/4f47941ffdcb26eeb23c42c6263ef5f64f5ea692))
+
 ## 0.1.0 (2025-05-23)
 
 
