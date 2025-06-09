@@ -29,9 +29,10 @@ Once you've completed the setup process, your provider block should look like th
 
 ```hcl
 provider "googleworkspace" {
-  # Use 'my_customer' as an alias for your account's customerId to ensure compatibility with Google's API
-  # For example, custom schemas on the user object will fail if the customer_id is set to your actual customer_id
-  # For more details: https://developers.google.com/workspace/admin/directory/reference/rest/v1/schemas/get
+  # Use 'my_customer' as an alias for your account's customerId to ensure compatibility with
+  # Google's API. For example, custom schemas on the user object will fail if the customer_id
+  # is set to your actual customer_id
+  # For more details, see: https://developers.google.com/workspace/admin/directory/reference/rest/v1/schemas/get
   customer_id = "my_customer"
 
   credentials             = "/path/to/credentials/my-google-project-credentials-1234567890.json"
