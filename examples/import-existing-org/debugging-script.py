@@ -1,8 +1,8 @@
 #
-# We at Masterpoint found this script to be useful when debugging import issues
-# with existing users and roles into the terraform module. For example, it helped
-# confirm data and formatting of exsting users'  custom schema Key, Values,
-# and json encoded strings.
+# We at Masterpoint found this python script to be useful when debugging import
+# issues with existing users and roles into the terraform module to confirm the
+# expected data values. For example, confirm data and formatting of
+# exsting users' custom schema keys, values, and json encoded strings.
 #
 # This is intended only for ad-hoc debugging purposes and has not been thorughly
 # reviewed or tested. Use at your own risk.
