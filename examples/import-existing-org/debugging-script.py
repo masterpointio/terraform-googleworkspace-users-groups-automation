@@ -1,11 +1,20 @@
 #
-# We at Masterpoint found this python script to be useful when debugging import
-# issues with existing users and roles into the terraform module to confirm the
-# expected data values. For example, confirm data and formatting of
-# exsting users' custom schema keys, values, and json encoded strings.
+# Masterpoint Debugging Script for Google Workspace Imports
 #
-# This is intended only for ad-hoc debugging purposes and has not been thorughly
-# reviewed or tested. Use at your own risk.
+# This script helps debug import issues with existing users and roles in the Terraform module.
+# Use it to confirm the data and formatting of existing users' custom schema keys, values,
+# and JSON-encoded strings.
+#
+# Note: This script is intended for ad-hoc debugging and has not been thoroughly reviewed or tested.
+# Use with caution.
+#
+# Prerequisites:
+# - Python 3.x
+# - google-auth and google-api-python-client libraries
+# - A Google Workspace service account key (JSON)
+#
+# Example usage:
+#   python debugging-script.py
 #
 
 from google.oauth2 import service_account
