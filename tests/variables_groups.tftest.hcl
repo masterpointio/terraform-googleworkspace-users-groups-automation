@@ -21,6 +21,11 @@ run "email_success" {
       }
     }
   }
+
+  assert {
+    condition     = googleworkspace_group.defaults["team1@example.com"].name == "Team 1"
+    error_message = "Expected 'name' to be 'Team 1'."
+  }
 }
 
 run "email_invalid_missing_domain" {
@@ -67,6 +72,11 @@ run "group_settings_specific_values" {
     }
   }
   # We expect this plan to succeed as the structure is valid.
+
+  assert {
+    condition     = googleworkspace_group_settings.defaults["settings-test-group@example.com"].who_can_join == "INVITED_CAN_JOIN"
+    error_message = "Expected 'who_can_join' to be 'INVITED_CAN_JOIN'."
+  }
 }
 
 run "group_settings_no_settings_block" {
@@ -86,4 +96,9 @@ run "group_settings_no_settings_block" {
     }
   }
   # We expect this plan to succeed.
+
+  assert {
+    condition     = googleworkspace_group.defaults["no-settings-test-group@example.com"].name == "No Settings Test Group"
+    error_message = "Expected 'name' to be 'No Settings Test Group'."
+  }
 }

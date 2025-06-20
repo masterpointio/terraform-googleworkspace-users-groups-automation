@@ -22,6 +22,11 @@ run "email_success" {
       }
     }
   }
+
+  assert {
+    condition     = googleworkspace_user.defaults["first.last@example.com"].primary_email == "first.last@example.com"
+    error_message = "Expected 'primary_email' to be 'first.last@example.com'."
+  }
 }
 
 run "email_invalid_missing_at_symbol" {
@@ -63,10 +68,12 @@ run "password_success" {
         family_name  = "Last"
         given_name   = "First"
         password     = "password"
-        hash_function = "MD5"
       }
     }
   }
+
+  # pasword is a write only field, so don't test the output
+  expect_failures = []
 }
 
 run "password_too_short" {
@@ -134,6 +141,11 @@ run "hash_function_md5_success" {
         hash_function = "MD5"
       }
     }
+  }
+
+  assert {
+    condition     = googleworkspace_user.defaults["first.last@example.com"].hash_function == "MD5"
+    error_message = "Expected 'hash_function' to be 'MD5'."
   }
 }
 
@@ -281,7 +293,7 @@ run "custom_schemas_output_verification" {
 # -----------------------------------------------------------------------------
 
 run "groups_member_role_success" {
-  command = plan
+  command = apply
 
   providers = {
     googleworkspace = googleworkspace.mock
@@ -306,6 +318,11 @@ run "groups_member_role_success" {
         email = "team@example.com"
       }
     }
+  }
+
+  assert {
+    condition     = googleworkspace_group_member.user_to_groups["team@example.com/first.last@example.com"].role == "MEMBER"
+    error_message = "Expected 'role' to be 'MEMBER'."
   }
 }
 
@@ -460,7 +477,6 @@ run "group_member_type_invalid" {
         given_name   = "Invalid"
         groups = {
           "test-group" = {
-            role = "MEMBER"
             type = "INVALID-TYPE"
           }
         }
