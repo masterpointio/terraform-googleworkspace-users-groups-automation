@@ -16,6 +16,7 @@
 # IDE/Editor settings
 **/.idea
 **/*.iml
+.cursor/
 .vscode/
 *.orig
 *.draft
@@ -45,5 +46,6 @@ backend.tf.json
 **/*.*swp
 **/.DS_Store
 
-.cursor/rules
-.claude
+# Claude Code - we beleive engineers are responsible for the code they push no matter how it's generated.
+# Therefore, configs specific to their coding practices are their responsibilty to judiciously manage.
+.claude/*
