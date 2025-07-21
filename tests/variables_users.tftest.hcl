@@ -565,3 +565,64 @@ run "multiple_users_single_group_success" {
     error_message = "Expected group_id to be 'shared-team@example.com'"
   }
 }
+
+run "single_user_multiple_groups_success" {
+  command = apply # Uses mock provider, no real resources created
+
+  providers = {
+    googleworkspace = googleworkspace.mock
+  }
+
+  variables {
+    users = {
+      "multi.group@example.com" = {
+        primary_email = "multi.group@example.com"
+        family_name  = "Group"
+        given_name   = "Multi"
+        groups = {
+          "dev-team" = {
+            role = "member"
+          }
+          "admin-team" = {
+            role = "owner"
+          }
+        }
+      }
+    }
+    groups = {
+      "dev-team" = {
+        name  = "Development Team"
+        email = "dev-team@example.com"
+      }
+      "admin-team" = {
+        name  = "Admin Team"
+        email = "admin-team@example.com"
+      }
+      "not-used-group" = {
+        name  = "Not Used Group"
+        email = "not-used-group@example.com"
+      }
+    }
+  }
+
+  assert {
+    condition = (
+      googleworkspace_group_member.user_to_groups["dev-team@example.com/multi.group@example.com"].role == "MEMBER" &&
+      googleworkspace_group_member.user_to_groups["admin-team@example.com/multi.group@example.com"].role == "OWNER"
+    )
+    error_message = "User should added to dev-team and admin-team groups"
+  }
+
+  assert {
+    condition = (
+      googleworkspace_group_member.user_to_groups["dev-team@example.com/multi.group@example.com"].email == "multi.group@example.com" &&
+      googleworkspace_group_member.user_to_groups["admin-team@example.com/multi.group@example.com"].email == "multi.group@example.com"
+    )
+    error_message = "Expected user <> group mappings to exist for dev-team and admin-team groups"
+  }
+
+  assert {
+    condition = !contains(keys(googleworkspace_group_member.user_to_groups), "not-used-group@example.com/multi.group@example.com")
+    error_message = "Expected user to not be in not-used-group"
+  }
+}
