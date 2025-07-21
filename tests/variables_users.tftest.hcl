@@ -606,23 +606,64 @@ run "single_user_multiple_groups_success" {
   }
 
   assert {
-    condition = (
-      googleworkspace_group_member.user_to_groups["dev-team@example.com/multi.group@example.com"].role == "MEMBER" &&
-      googleworkspace_group_member.user_to_groups["admin-team@example.com/multi.group@example.com"].role == "OWNER"
-    )
-    error_message = "User should added to dev-team and admin-team groups"
+    condition = googleworkspace_group_member.user_to_groups["dev-team@example.com/multi.group@example.com"].role == "MEMBER"
+    error_message = "Expected user role in dev-team to be 'MEMBER', got: ${googleworkspace_group_member.user_to_groups["dev-team@example.com/multi.group@example.com"].role}"
   }
 
   assert {
-    condition = (
-      googleworkspace_group_member.user_to_groups["dev-team@example.com/multi.group@example.com"].email == "multi.group@example.com" &&
-      googleworkspace_group_member.user_to_groups["admin-team@example.com/multi.group@example.com"].email == "multi.group@example.com"
-    )
-    error_message = "Expected user <> group mappings to exist for dev-team and admin-team groups"
+    condition = googleworkspace_group_member.user_to_groups["admin-team@example.com/multi.group@example.com"].role == "OWNER"
+    error_message = "Expected user role in admin-team to be 'OWNER', got: ${googleworkspace_group_member.user_to_groups["admin-team@example.com/multi.group@example.com"].role}"
+  }
+
+  assert {
+    condition = googleworkspace_group_member.user_to_groups["dev-team@example.com/multi.group@example.com"].email == "multi.group@example.com"
+    error_message = "Expected user email in dev-team to be 'multi.group@example.com'"
+  }
+
+  assert {
+    condition = googleworkspace_group_member.user_to_groups["admin-team@example.com/multi.group@example.com"].email == "multi.group@example.com"
+    error_message = "Expected user email in admin-team to be 'multi.group@example.com'"
   }
 
   assert {
     condition = !contains(keys(googleworkspace_group_member.user_to_groups), "not-used-group@example.com/multi.group@example.com")
     error_message = "Expected user to not be in not-used-group"
   }
+}
+
+run "user_references_nonexistent_group_failure" {
+  command = plan
+
+  providers = {
+    googleworkspace = googleworkspace.mock
+  }
+
+  variables {
+    users = {
+      "bad.user@example.com" = {
+        primary_email = "bad.user@example.com"
+        family_name  = "User"
+        given_name   = "Bad"
+        groups = {
+          "existing-group" = {
+            role = "member"
+          }
+          "missing-group" = {
+            role = "member"
+          }
+        }
+      }
+    }
+    groups = {
+      "existing-group" = {
+        name  = "Existing Group"
+        email = "existing-group@example.com"
+      }
+      # Note: missing-group is not defined here
+    }
+  }
+
+  expect_failures = [
+    googleworkspace_group_member.user_to_groups
+  ]
 }
