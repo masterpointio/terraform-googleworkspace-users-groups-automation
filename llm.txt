@@ -1,0 +1,775 @@
+# Terraform Google Workspace Users & Groups Automation Module
+
+This is a Terraform child module for managing Google Workspace users, groups, and group memberships through Infrastructure as Code. The module provides declarative configuration for user and group management with automated group membership assignment.
+
+## Prerequisites
+
+Before using this module, ensure you have:
+
+### Required Access & Permissions
+- **Google Cloud Project** with billing enabled
+- **Google Workspace organization** with Super Admin access
+- **Super Admin user account** for impersonation (cannot be a service account)
+- **Terraform or OpenTofu** installed (version >= 1.0)
+
+### Required APIs & Services
+- **Admin SDK API** enabled in your Google Cloud project:
+  - Go to **Google Cloud Console** → **APIs & Services** → **Library**
+  - Search for "Admin SDK API" and click **Enable**
+- **Google Workspace organization** properly configured and accessible
+
+### Security Requirements
+- Secure location to store service account JSON key file
+- Environment variable management for sensitive values
+- Version control system for configuration management
+
+⚠️ **Critical**: The impersonated user MUST have Super Admin privileges in Google Workspace. Service accounts cannot directly manage admin privileges or custom schemas.
+
+## Provider Setup
+
+### Domain-Wide Delegation Setup (Required)
+
+Domain-wide delegation is required for this module to manage admin privileges and custom schemas. Follow these steps to configure it using the Google Cloud Console and Admin Console UI.
+
+⚠️ **Before Starting**: Ensure the Admin SDK API is enabled in your Google Cloud project (see Prerequisites above).
+
+⸻
+
+#### 1. Create a Service Account (Google Cloud Console)
+1. Go to the **IAM & Admin** → **Service Accounts** page in your Google Cloud project.
+2. Click **Create Service Account**.
+3. Set the following:
+   • **Service account name**: terraform-googleworkspace
+   • **Description**: Service account for Terraform Google Workspace management
+4. Click **Create and Continue** (no roles need to be assigned at this step unless your setup requires it).
+5. Click **Done** to finish creating the account.
+
+⸻
+
+#### 2. Enable Domain-Wide Delegation for the Service Account
+1. On the **Service Accounts** page, click the name of the newly created **terraform-googleworkspace** account.
+2. Click the **Edit** (pencil) icon at the top of the service account details page.
+3. Check the box **Enable Google Workspace Domain-wide Delegation**.
+4. Set the **Product name for the consent screen** (e.g., Terraform Workspace Manager) if prompted.
+5. Click **Save**.
+
+⸻
+
+#### 3. Create and Download a JSON Key
+1. Still on the service account page, go to the **Keys** tab.
+2. Click **Add Key** → **Create new key**.
+3. Choose **JSON** and click **Create**.
+4. A `.json` key file will be downloaded to your computer. Keep it secure — this will be used by Terraform.
+
+**Note**: Your service account email will be in the format:
+`terraform-googleworkspace@PROJECT_ID.iam.gserviceaccount.com`
+(Replace PROJECT_ID with your actual Google Cloud project ID)
+
+⸻
+
+#### 4. Authorize the Service Account in Google Admin Console
+1. Go to the **Google Admin Console** → **API Controls** page.
+2. Under **Domain-wide delegation**, click **Manage Domain Wide Delegation**.
+3. Click **Add New**.
+4. For **Client ID**, paste the `client_id` from the JSON key file. You can find it by opening the file and looking for:
+   ```json
+   "client_id": "123456789012345678901"
+   ```
+5. In the **OAuth Scopes** field, paste the following (as a single line):
+   ```
+   https://www.googleapis.com/auth/admin.directory.group,https://www.googleapis.com/auth/admin.directory.user,https://www.googleapis.com/auth/admin.directory.userschema,https://www.googleapis.com/auth/apps.groups.settings,https://www.googleapis.com/auth/iam
+   ```
+6. Click **Authorize**.
+
+⸻
+
+#### 5. Provider Configuration
+```hcl
+provider "googleworkspace" {
+  customer_id = "my_customer"  # Required for custom schemas
+  credentials = "/path/to/terraform-googleworkspace-key.json"
+  impersonated_user_email = "admin@company.com"  # Super Admin user
+  
+  oauth_scopes = [
+    "https://www.googleapis.com/auth/admin.directory.group",
+    "https://www.googleapis.com/auth/admin.directory.user", 
+    "https://www.googleapis.com/auth/admin.directory.userschema",
+    "https://www.googleapis.com/auth/apps.groups.settings",
+    "https://www.googleapis.com/auth/iam"
+  ]
+}
+```
+
+**Important Notes:**
+- The `impersonated_user_email` must be a **Super Admin** in your Google Workspace
+- Use `customer_id = "my_customer"` (literal string) for custom schema compatibility
+- Keep your service account key file secure and out of version control
+
+## Complete Working Example
+
+This is a complete, functional Terraform configuration that you can copy and customize:
+
+```hcl
+# terraform/main.tf
+terraform {
+  required_version = ">= 1.0"
+  required_providers {
+    googleworkspace = {
+      source  = "hashicorp/googleworkspace"
+      version = ">= 0.7.0"
+    }
+  }
+}
+
+provider "googleworkspace" {
+  customer_id = "my_customer"
+  credentials = var.google_credentials_file
+  impersonated_user_email = var.super_admin_email
+  
+  oauth_scopes = [
+    "https://www.googleapis.com/auth/admin.directory.group",
+    "https://www.googleapis.com/auth/admin.directory.user", 
+    "https://www.googleapis.com/auth/admin.directory.userschema",
+    "https://www.googleapis.com/auth/apps.groups.settings",
+    "https://www.googleapis.com/auth/iam"
+  ]
+}
+
+module "workspace_users_groups" {
+  source = "masterpointio/users-groups-automation/googleworkspace"
+  # Pin to specific version from registry:
+  # Terraform: https://registry.terraform.io/modules/masterpointio/users-groups-automation/googleworkspace/latest
+  # OpenTofu: https://search.opentofu.org/module/masterpointio/users-groups-automation/googleworkspace/latest
+  version = "X.X.X"  # REQUIRED: Check latest version at registry links above
+
+  # IMPORTANT: Define groups FIRST - users reference these group keys
+  groups = {
+    "engineering" = {
+      name  = "Engineering Team"
+      email = "engineering@company.com"
+      description = "Development and engineering team members"
+      settings = {
+        who_can_join         = "ALL_IN_DOMAIN_CAN_JOIN"
+        who_can_post_message = "ALL_MEMBERS_CAN_POST"
+      }
+    }
+    "admins" = {
+      name  = "System Administrators"
+      email = "admins@company.com"
+      description = "System administrators with elevated privileges"
+      settings = {
+        who_can_join = "INVITED_CAN_JOIN"
+      }
+    }
+  }
+
+  # Users reference group keys defined above in their groups attribute
+  users = {
+    "john.doe@company.com" = {
+      primary_email = "john.doe@company.com"
+      given_name    = "John"
+      family_name   = "Doe"
+      password      = var.user_default_password
+      change_password_at_next_login = true
+      
+      # Groups must match keys in the groups block above
+      groups = {
+        "engineering" = {
+          role = "MEMBER"
+        }
+      }
+      
+      custom_schemas = [
+        {
+          schema_name = "Employee_Info"
+          schema_values = {
+            Department = "Engineering"
+            StartDate  = "2024-01-15"
+          }
+        }
+      ]
+    }
+    "jane.admin@company.com" = {
+      primary_email = "jane.admin@company.com"
+      given_name    = "Jane"
+      family_name   = "Admin"
+      password      = var.user_default_password
+      change_password_at_next_login = true
+      is_admin      = true
+      
+      groups = {
+        "admins" = {
+          role = "OWNER"
+        }
+        "engineering" = {
+          role = "MANAGER"
+        }
+      }
+    }
+  }
+}
+```
+
+```hcl
+# terraform/variables.tf
+variable "google_credentials_file" {
+  description = "Path to Google service account credentials JSON file"
+  type        = string
+  sensitive   = true
+}
+
+variable "super_admin_email" {
+  description = "Email of Super Admin user for impersonation"
+  type        = string
+}
+
+variable "user_default_password" {
+  description = "Default password for new users"
+  type        = string
+  sensitive   = true
+}
+```
+
+```hcl
+# terraform/terraform.tfvars.example (template - copy to terraform.tfvars)
+google_credentials_file = "/path/to/service-account-key.json"
+super_admin_email      = "admin@example.com"
+user_default_password  = "CHANGE_ME"
+
+# terraform/terraform.tfvars (DO NOT commit to version control)
+# Copy from terraform.tfvars.example and update with actual values
+```
+
+⚠️ **Critical**: Groups MUST be defined in the module's `groups` block before users can reference them. The module cannot reference external Google Workspace groups not managed by this module.
+
+**Resource Creation Order**: groups → group settings → users → group memberships.
+
+## Architecture & Key Features
+
+### Resource Management Flow
+1. **Groups** are created first via `googleworkspace_group` resources
+2. **Group Settings** are applied via `googleworkspace_group_settings` 
+3. **Users** are created via `googleworkspace_user` resources
+4. **Group Memberships** are established via `googleworkspace_group_member` resources
+
+### Advanced Features
+
+#### Custom Schemas Support
+```hcl
+# Simple custom schema example
+users = {
+  "user@company.com" = {
+    # ... basic user attributes
+    custom_schemas = [
+      {
+        schema_name = "Employee_Info"
+        schema_values = {
+          Department = "Engineering"  # Simple string value
+          StartDate  = "2024-01-15"   # Simple string value
+        }
+      }
+    ]
+  }
+}
+
+# Complex example with JSON arrays (for AWS roles, etc.)
+users = {
+  "user@company.com" = {
+    # ... basic user attributes
+    custom_schemas = [
+      {
+        schema_name = "AWS_Roles"
+        schema_values = {
+          Role = "[\"arn:aws:iam::123456789012:role/Admin\"]"  # JSON-encoded array
+        }
+      }
+    ]
+  }
+}
+```
+
+#### Password Management Options
+```hcl
+# Environment variable (recommended)
+password = var.user_default_password
+
+# Clear text password (8-100 characters) - only for development
+password = "MySecurePassword123!"
+
+# Or hashed password with hash function
+password = "5f4dcc3b5aa765d61d8327deb882cf99"  # MD5 hash
+hash_function = "MD5"  # Options: MD5, SHA-1, crypt
+
+# Force password change on first login (recommended)
+change_password_at_next_login = true
+```
+
+#### Group Membership Roles
+- `MEMBER` - Standard group member (default)
+- `MANAGER` - Can manage group settings and members
+- `OWNER` - Full control over group
+
+### Data Transformation Logic
+The module uses sophisticated locals to flatten nested user-group relationships:
+
+- `group_settings`: Merges group configurations with email references
+- `_user_with_groups`: Filters users who have group memberships
+- `group_members`: Creates flattened map of `"group_email/user_email"` relationships
+
+## YAML Configuration Pattern
+The module is designed to work seamlessly with YAML-based configuration for better readability and maintainability:
+
+```yaml
+# config/users.yaml
+users:
+  john.doe@company.com: &default_user
+    primary_email: "john.doe@company.com"  # REQUIRED
+    given_name: "John"
+    family_name: "Doe"
+    password: "TempPassword123!"
+    change_password_at_next_login: true
+    groups:
+      engineering:
+        role: "MEMBER"
+  
+  jane.smith@company.com:
+    <<: *default_user
+    primary_email: "jane.smith@company.com"  # REQUIRED - must override from anchor
+    given_name: "Jane"
+    family_name: "Smith"
+    groups:
+      engineering:
+        role: "MANAGER"
+
+groups:
+  engineering:
+    name: "Engineering Team"
+    email: "engineering@company.com"
+    description: "Development and engineering team members"
+    settings:
+      who_can_join: "ALL_IN_DOMAIN_CAN_JOIN"
+      who_can_post_message: "ALL_MEMBERS_CAN_POST"
+```
+
+Reference in Terraform:
+```hcl
+# main.tf
+locals {
+  config = yamldecode(file("${path.module}/config/users.yaml"))
+}
+
+module "workspace_users_groups" {
+  source  = "masterpointio/users-groups-automation/googleworkspace"
+  version = "X.X.X"  # REQUIRED: Check latest version at registry links above
+  
+  users  = local.config.users
+  groups = local.config.groups
+}
+```
+
+**Important YAML Notes**:
+- `primary_email` is REQUIRED for each user and must be unique
+- When using YAML anchors, always override `primary_email` for each user
+- Group keys in user `groups` attribute must match group keys in the `groups` section
+
+## Development Commands
+
+### Testing Framework
+This module includes ~20 comprehensive integration and validation tests:
+```bash
+# Run all tests (validates complex resource interactions)
+terraform test
+
+# Test specific scenarios
+terraform test tests/variables_users.tftest.hcl
+terraform test tests/variables_groups.tftest.hcl
+```
+
+### Code Quality
+```bash
+# Format Terraform files
+terraform fmt -recursive
+
+# Validate configuration
+terraform validate
+
+# Plan changes
+terraform plan
+```
+
+## Common Patterns
+
+### Bulk User Creation
+Create multiple users with shared group memberships by defining them in the `users` map with consistent group references.
+
+### Organizational Units
+```hcl
+users = {
+  "contractor@company.com" = {
+    primary_email = "contractor@company.com"
+    given_name    = "John"
+    family_name   = "Contractor"
+    password      = var.user_default_password
+    org_unit_path = "/Contractors"
+  }
+}
+```
+
+### Admin User Creation
+```hcl
+users = {
+  "admin@company.com" = {
+    primary_email = "admin@company.com"
+    given_name    = "System"
+    family_name   = "Administrator"
+    password      = var.admin_password
+    is_admin      = true
+    groups = {
+      "admins" = {
+        role = "OWNER"
+      }
+    }
+  }
+}
+```
+
+## Migration & Import Strategy
+
+### Importing Existing Users/Groups
+The module supports importing existing Google Workspace resources:
+
+```bash
+# Import existing user (use email as both key and identifier)
+terraform import 'module.workspace_users_groups.googleworkspace_user.defaults["user@company.com"]' user@company.com
+
+# Import existing group (use group key from config, group email as identifier)
+terraform import 'module.workspace_users_groups.googleworkspace_group.defaults["engineering"]' engineering@company.com
+
+# Import group settings
+terraform import 'module.workspace_users_groups.googleworkspace_group_settings.defaults["engineering"]' engineering@company.com
+
+# Import group membership
+terraform import 'module.workspace_users_groups.googleworkspace_group_member.user_to_groups["engineering@company.com/user@company.com"]' engineering@company.com/user@company.com
+```
+
+**Import Requirements**:
+- User keys in Terraform must match their primary email addresses
+- Group keys can be arbitrary but must be consistent across configuration
+- Group memberships use the format `"group_email/user_email"`
+
+See the `examples/import-existing-org/` directory for complete import workflows.
+
+### Updating Existing Users (After Import)
+After importing existing users, you can update their configuration by specifying all required fields:
+
+```hcl
+# Updating existing users (after import)
+users = {
+  "existing.user@company.com" = {
+    primary_email = "existing.user@company.com"
+    given_name    = "Existing"
+    family_name   = "User"
+    # All required fields must be specified
+    # Terraform will show planned changes
+    groups = {
+      "engineering" = {
+        role = "MEMBER"
+      }
+    }
+    # Add any additional attributes you want to manage
+    org_unit_path = "/Engineering"
+  }
+}
+```
+
+**Important**: When updating imported users, you must provide ALL required user attributes, not just the ones you want to change. Terraform will show you the planned changes before applying.
+
+## Organizational Patterns
+
+### Team-Based Configuration
+```hcl
+# main.tf
+module "engineering_team" {
+  source = "./modules/team-config"
+  team_config = yamldecode(file("teams/engineering.yaml"))
+}
+
+module "marketing_team" {
+  source = "./modules/team-config" 
+  team_config = yamldecode(file("teams/marketing.yaml"))
+}
+```
+
+### Git Workflow Integration
+- Store YAML configuration in version control
+- Use pull request reviews for access changes
+- Leverage YAML anchors for consistent user defaults
+
+## Troubleshooting
+
+### Common Errors and Solutions
+
+#### Authentication & Permissions Errors
+
+**Error**: `Error 403: Not Authorized to access this resource/api`
+```
+Solution: 
+1. Verify the impersonated_user_email has Super Admin privileges
+2. Confirm Admin SDK API is enabled in Google Cloud Console
+3. Check that domain-wide delegation is properly configured with all required OAuth scopes
+```
+
+**Error**: `Error 403: Request had insufficient authentication scopes`
+```
+Solution:
+1. Verify all OAuth scopes are included in domain-wide delegation:
+   - https://www.googleapis.com/auth/admin.directory.group
+   - https://www.googleapis.com/auth/admin.directory.user
+   - https://www.googleapis.com/auth/admin.directory.userschema
+   - https://www.googleapis.com/auth/apps.groups.settings
+   - https://www.googleapis.com/auth/iam
+2. Re-authorize the client ID in Google Admin Console if scopes were added
+```
+
+**Error**: `Error: unable to retrieve token: invalid_grant`
+```
+Solution:
+1. Check that service account key file exists and is readable
+2. Verify the impersonated_user_email exists and is a Super Admin
+3. Ensure domain-wide delegation is enabled for the service account
+4. Try regenerating the service account key
+```
+
+#### Resource Configuration Errors
+
+**Error**: `Error creating User: googleapi: Error 404: Group not found`
+```
+Solution:
+Groups must be defined in the module's 'groups' block before users can reference them:
+
+# WRONG - group not defined
+users = {
+  "user@company.com" = {
+    groups = { "undefined_group" = { role = "MEMBER" } }
+  }
+}
+
+# CORRECT - group defined first
+groups = {
+  "engineering" = { name = "Engineering", email = "eng@company.com" }
+}
+users = {
+  "user@company.com" = {
+    groups = { "engineering" = { role = "MEMBER" } }
+  }
+}
+```
+
+**Error**: `Error: Invalid value for "password" - must be between 8 and 100 characters`
+```
+Solution: Ensure passwords meet Google Workspace requirements:
+- Between 8-100 characters
+- Use variables for sensitive values: password = var.user_password
+```
+
+**Error**: `Error creating User: googleapi: Error 409: Entity already exists`
+```
+Solution:
+1. User already exists in Google Workspace
+2. Import existing user: terraform import 'module.workspace_users_groups.googleworkspace_user.defaults["user@company.com"]' user@company.com
+3. Or use a different email address
+```
+
+#### Custom Schema Errors
+
+**Error**: `Error: customer must be 'my_customer' when using custom schemas`
+```
+Solution: Always set customer_id = "my_customer" (literal string) in provider configuration
+```
+
+**Error**: `Error: Invalid schema values - must be JSON encodable`
+```
+Solution: Ensure custom schema values are properly formatted strings:
+# WRONG
+Role = ["arn:aws:iam::123:role/Admin"]
+# CORRECT  
+Role = "[\"arn:aws:iam::123:role/Admin\"]"
+```
+
+#### Import Errors
+
+**Error**: `Error: resource not found during import`
+```
+Solution:
+1. Verify the resource exists in Google Workspace
+2. Use correct import format:
+   - Users: terraform import '...["user@company.com"]' user@company.com
+   - Groups: terraform import '...["group_key"]' group@company.com
+3. Check that group keys match between import command and configuration
+```
+
+#### YAML Configuration Errors
+
+**Error**: `Error: missing required field "primary_email"`
+```
+Solution: When using YAML anchors, always override primary_email:
+# WRONG
+jane@company.com:
+  <<: *default_user
+
+# CORRECT
+jane@company.com:
+  <<: *default_user
+  primary_email: "jane@company.com"
+```
+
+#### Password Management in CI/CD Workflows
+
+**Problem**: Adding new users in CI/CD environments (like Spacelift) fails because passwords are required but shouldn't be stored in configuration.
+
+**Error**: `Error: password is required for new users but cannot be provided in automated workflows`
+
+```
+Solution: Use generated passwords with temporary access:
+
+# Option 1: Generate random password (recommended for CI/CD)
+resource "random_password" "user_temp_password" {
+  for_each = var.new_users_without_passwords
+  length   = 16
+  special  = true
+}
+
+locals {
+  users_with_generated_passwords = {
+    for email, user in var.users : email => merge(user, {
+      password = try(user.password, random_password.user_temp_password[email].result)
+      change_password_at_next_login = try(user.change_password_at_next_login, true)
+    })
+  }
+}
+
+module "workspace_users_groups" {
+  source = "masterpointio/users-groups-automation/googleworkspace"
+  users  = local.users_with_generated_passwords
+  # ... other configuration
+}
+
+# Output temporary passwords securely (for initial access)
+output "temporary_passwords" {
+  value = {
+    for email, password in random_password.user_temp_password : 
+    email => password.result
+  }
+  sensitive = true
+}
+
+# Option 2: Use consistent temporary password
+variable "temp_password_for_new_users" {
+  description = "Temporary password for new users (they must change on first login)"
+  type        = string
+  sensitive   = true
+  default     = "ChangeMe123!"
+}
+
+# Apply to all new users
+users = {
+  "newuser@company.com" = {
+    primary_email = "newuser@company.com"
+    given_name    = "New"
+    family_name   = "User"
+    password      = var.temp_password_for_new_users
+    change_password_at_next_login = true  # Force password change
+  }
+}
+```
+
+**Workflow Recommendations**:
+1. Use generated passwords for new users in automated environments
+2. Always set `change_password_at_next_login = true` for new users
+3. Communicate temporary passwords through secure channels (not in logs)
+4. Consider using Google's "Send password info to personal email" option manually after Terraform creates the user
+
+### Debug Commands
+
+```bash
+# Check provider authentication
+terraform plan -target="data.googleworkspace_domain_alias.test" 
+
+# Validate configuration
+terraform validate
+
+# See detailed error messages
+TF_LOG=DEBUG terraform apply
+
+# Check specific resource state
+terraform state show 'module.workspace_users_groups.googleworkspace_group.defaults["group_key"]'
+```
+
+## Security Best Practices
+
+### Credential Management
+```bash
+# Use environment variables for sensitive values
+export TF_VAR_google_credentials_file="/secure/path/to/key.json"
+export TF_VAR_super_admin_email="admin@company.com"
+export TF_VAR_user_default_password="SecurePassword123!"
+
+# Never commit credentials to version control
+echo "*.json" >> .gitignore
+echo "terraform.tfvars" >> .gitignore
+```
+
+### Service Account Security
+- Store JSON key files outside of project directories
+- Use least-privilege principle - only grant necessary OAuth scopes
+- Rotate service account keys regularly
+- Monitor service account usage in Google Cloud Console
+
+### Password Management
+```hcl
+# Use variables for all passwords
+variable "user_default_password" {
+  description = "Default password for new users"
+  type        = string
+  sensitive   = true
+}
+
+# Force password changes on first login
+users = {
+  "user@company.com" = {
+    password = var.user_default_password
+    change_password_at_next_login = true
+  }
+}
+```
+
+### Access Control
+- Limit who can modify Terraform configurations
+- Use pull request reviews for all changes
+- Implement approval processes for admin user creation
+- Regular audit of user and group memberships
+
+## Critical Configuration Notes
+
+- **Required**: `customer_id = "my_customer"` which is a dynamic reference to the google workspace account in your credentials file (if you don't, you'll have issues with the users' custom_schemas)
+- **Required**: Domain-wide delegation for admin privilege assignment
+- **Pattern**: Group memberships are managed via the `groups` attribute in user objects
+- **Validation**: Email addresses and passwords are automatically validated
+- **Dependencies**: Resource creation order is handled automatically via `depends_on`
+- **Versioning**: Always pin to specific version from [Terraform Registry](https://registry.terraform.io/modules/masterpointio/users-groups-automation/googleworkspace/latest) or [OpenTofu Registry](https://search.opentofu.org/module/masterpointio/users-groups-automation/googleworkspace/latest)
+
+## Validation & Error Prevention
+The module includes extensive validation to catch configuration errors early:
+- Email format validation for users and groups
+- Password complexity requirements
+- Group role validation (MEMBER, MANAGER, OWNER)
+- Custom schema JSON encoding validation
+- Hash function compatibility checks
+
+## File Structure
+- `main.tf` - Core resources and data transformation logic (lines 1-22 contain critical flattening logic)
+- `variables.tf` - Input variable definitions with comprehensive validation rules  
+- `context.tf` - CloudPosse null-label integration for consistent naming
+- `versions.tf` - Provider version constraints (requires terraform >= 1.0)
+- `tests/` - Terraform native test suite with ~20 validation scenarios
+- `examples/` - Usage examples including complete setup and import patterns
