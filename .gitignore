@@ -45,5 +45,6 @@ backend.tf.json
 **/*.*swp
 **/.DS_Store
 
+CLAUDE.md
 .cursor/rules
 .claude

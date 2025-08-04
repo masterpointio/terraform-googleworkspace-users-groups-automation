@@ -492,3 +492,178 @@ run "group_member_type_invalid" {
 
   expect_failures = [var.users]
 }
+
+# -----------------------------------------------------------------------------
+# --- validate multiple users in single group
+# -----------------------------------------------------------------------------
+
+run "multiple_users_single_group_success" {
+  command = apply # Uses mock provider, no real resources created
+
+  providers = {
+    googleworkspace = googleworkspace.mock
+  }
+
+  variables {
+    users = {
+      "user1@example.com" = {
+        primary_email = "user1@example.com"
+        family_name  = "One"
+        given_name   = "User"
+        groups = {
+          "shared-team" = {
+            role = "member"
+          }
+        }
+      }
+      "user2@example.com" = {
+        primary_email = "user2@example.com"
+        family_name  = "Two"
+        given_name   = "User"
+        groups = {
+          "shared-team" = {
+            role = "owner"
+          }
+        }
+      }
+      "user3@example.com" = {
+        primary_email = "user3@example.com"
+        family_name  = "Three"
+        given_name   = "User"
+        groups = {
+          "shared-team" = {
+            role = "manager"
+          }
+        }
+      }
+    }
+    groups = {
+      "shared-team" = {
+        name  = "Shared Team"
+        email = "shared-team@example.com"
+      }
+    }
+  }
+
+  assert {
+    condition = googleworkspace_group_member.user_to_groups["shared-team@example.com/user1@example.com"].role == "MEMBER"
+    error_message = "Expected user1 role to be 'MEMBER', got: ${googleworkspace_group_member.user_to_groups["shared-team@example.com/user1@example.com"].role}"
+  }
+
+  assert {
+    condition = googleworkspace_group_member.user_to_groups["shared-team@example.com/user2@example.com"].role == "OWNER"
+    error_message = "Expected user2 role to be 'OWNER', got: ${googleworkspace_group_member.user_to_groups["shared-team@example.com/user2@example.com"].role}"
+  }
+
+  assert {
+    condition = googleworkspace_group_member.user_to_groups["shared-team@example.com/user3@example.com"].role == "MANAGER"
+    error_message = "Expected user3 role to be 'MANAGER', got: ${googleworkspace_group_member.user_to_groups["shared-team@example.com/user3@example.com"].role}"
+  }
+
+  assert {
+    condition = googleworkspace_group_member.user_to_groups["shared-team@example.com/user1@example.com"].group_id == "shared-team@example.com"
+    error_message = "Expected group_id to be 'shared-team@example.com'"
+  }
+}
+
+run "single_user_multiple_groups_success" {
+  command = apply # Uses mock provider, no real resources created
+
+  providers = {
+    googleworkspace = googleworkspace.mock
+  }
+
+  variables {
+    users = {
+      "multi.group@example.com" = {
+        primary_email = "multi.group@example.com"
+        family_name  = "Group"
+        given_name   = "Multi"
+        groups = {
+          "dev-team" = {
+            role = "member"
+          }
+          "admin-team" = {
+            role = "owner"
+          }
+        }
+      }
+    }
+    groups = {
+      "dev-team" = {
+        name  = "Development Team"
+        email = "dev-team@example.com"
+      }
+      "admin-team" = {
+        name  = "Admin Team"
+        email = "admin-team@example.com"
+      }
+      "not-used-group" = {
+        name  = "Not Used Group"
+        email = "not-used-group@example.com"
+      }
+    }
+  }
+
+  assert {
+    condition = googleworkspace_group_member.user_to_groups["dev-team@example.com/multi.group@example.com"].role == "MEMBER"
+    error_message = "Expected user role in dev-team to be 'MEMBER', got: ${googleworkspace_group_member.user_to_groups["dev-team@example.com/multi.group@example.com"].role}"
+  }
+
+  assert {
+    condition = googleworkspace_group_member.user_to_groups["admin-team@example.com/multi.group@example.com"].role == "OWNER"
+    error_message = "Expected user role in admin-team to be 'OWNER', got: ${googleworkspace_group_member.user_to_groups["admin-team@example.com/multi.group@example.com"].role}"
+  }
+
+  assert {
+    condition = googleworkspace_group_member.user_to_groups["dev-team@example.com/multi.group@example.com"].email == "multi.group@example.com"
+    error_message = "Expected user email in dev-team to be 'multi.group@example.com'"
+  }
+
+  assert {
+    condition = googleworkspace_group_member.user_to_groups["admin-team@example.com/multi.group@example.com"].email == "multi.group@example.com"
+    error_message = "Expected user email in admin-team to be 'multi.group@example.com'"
+  }
+
+  assert {
+    condition = !contains(keys(googleworkspace_group_member.user_to_groups), "not-used-group@example.com/multi.group@example.com")
+    error_message = "Expected user to not be in not-used-group"
+  }
+}
+
+run "user_references_nonexistent_group_failure" {
+  command = plan
+
+  providers = {
+    googleworkspace = googleworkspace.mock
+  }
+
+  variables {
+    users = {
+      "bad.user@example.com" = {
+        primary_email = "bad.user@example.com"
+        family_name  = "User"
+        given_name   = "Bad"
+        groups = {
+          "existing-group" = {
+            role = "member"
+          }
+          "missing-group" = {
+            role = "member"
+          }
+        }
+      }
+    }
+    groups = {
+      "existing-group" = {
+        name  = "Existing Group"
+        email = "existing-group@example.com"
+      }
+      # Note: missing-group is not defined here
+    }
+  }
+
+  expect_failures = [
+    googleworkspace_group_member.user_to_groups
+  ]
+}
