@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.3.0](https://github.com/masterpointio/terraform-googleworkspace-users-groups-automation/compare/v0.2.0...v0.3.0) (2025-08-04)
+
+
+### Features
+
+* group membership tests ([#18](https://github.com/masterpointio/terraform-googleworkspace-users-groups-automation/issues/18)) ([8d43a90](https://github.com/masterpointio/terraform-googleworkspace-users-groups-automation/commit/8d43a90077f8b5c247a51ef16f5288e65561abf2))
+* revised tests while writing article about the tests we added in this module ([#15](https://github.com/masterpointio/terraform-googleworkspace-users-groups-automation/issues/15)) ([933242a](https://github.com/masterpointio/terraform-googleworkspace-users-groups-automation/commit/933242a5d69401ea097f3b9f29894091f0581f5f))
+
+
+### Bug Fixes
+
+* docs, add python script I used in debugging the MP setup ([#12](https://github.com/masterpointio/terraform-googleworkspace-users-groups-automation/issues/12)) ([83b9747](https://github.com/masterpointio/terraform-googleworkspace-users-groups-automation/commit/83b97477533b31d3671127f68b2a4296a8cd39a0))
+* docs, polish readme to include user custom_schemas for the SSO setup ([#10](https://github.com/masterpointio/terraform-googleworkspace-users-groups-automation/issues/10)) ([94a6ecb](https://github.com/masterpointio/terraform-googleworkspace-users-groups-automation/commit/94a6ecb9dc86f60c66490b939947f4584c3bfef4))
+* leverage cursor to fix spelling/grammar ([#13](https://github.com/masterpointio/terraform-googleworkspace-users-groups-automation/issues/13)) ([9b9112a](https://github.com/masterpointio/terraform-googleworkspace-users-groups-automation/commit/9b9112a2d3ff0f3d415813a8b4de11cefcab56a9))
+
 ## [0.2.0](https://github.com/masterpointio/terraform-googleworkspace-users-groups-automation/compare/v0.1.0...v0.2.0) (2025-06-06)
 
 
