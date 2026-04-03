@@ -14,7 +14,8 @@ locals {
       for user_key, user in local._user_with_groups : [
         for group_key, group in user.groups : merge(group, {
           user_primary_email = user.primary_email,
-          group_email        = googleworkspace_group.defaults[group_key].email
+          group_key          = group_key,
+          group_email        = try(var.groups[group_key].email, "invalid-group:${group_key}")
         })
       ]
     ]) : "${obj.group_email}/${obj.user_primary_email}" => obj
@@ -121,6 +122,10 @@ resource "googleworkspace_group_member" "user_to_groups" {
   type     = upper(each.value.type)
 
   lifecycle {
+    precondition {
+      condition     = contains(keys(var.groups), each.value.group_key)
+      error_message = "User references group '${each.value.group_key}' which does not exist in var.groups."
+    }
     ignore_changes = [
       delivery_settings, # ignore user changes to delivery settings
     ]
