@@ -7,13 +7,13 @@ cli:
 plugins:
   sources:
     - id: trunk
-      ref: v1.10.1
+      ref: v1.10.2
       uri: https://github.com/trunk-io/plugins
 # Many linters and tools depend on runtimes - configure them here. (https://docs.trunk.io/runtimes)
 runtimes:
   enabled:
     - node@22.16.0
-    - python@3.10.8
+    - python@3.14.4
 # This is the section where you manage your linters. (https://docs.trunk.io/check/configuration)
 lint:
   disabled:
@@ -22,21 +22,21 @@ lint:
   enabled:
     - taplo@0.10.0
     - bandit@1.9.4
-    - black@26.3.1
+    - black@26.5.1
     - isort@8.0.1
-    - ruff@0.15.9
-    - renovate@43.104.1
-    - tofu@1.11.5
+    - ruff@0.15.20
+    - renovate@43.249.5
+    - tofu@1.12.3
     - actionlint@1.7.12
-    - checkov@3.2.513
+    - checkov@3.3.6
     - git-diff-check
-    - markdownlint@0.48.0
-    - prettier@3.8.1
-    - tflint@0.61.0
-    - trivy@0.69.3
-    - trufflehog@3.94.2
+    - markdownlint@0.49.0
+    - prettier@3.9.4
+    - tflint@0.63.1
+    - trivy@0.72.0
+    - trufflehog@3.95.7
     - yamllint@1.38.0
-    - zizmor@1.25.2
+    - zizmor@1.26.1
   definitions:
     - name: zizmor
       environment:
