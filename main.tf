@@ -53,6 +53,9 @@ resource "googleworkspace_user" "defaults" {
 
   lifecycle {
     ignore_changes = [
+      # Google resets this to false after the user's first password change,
+      # so it's only meaningful on create.
+      change_password_at_next_login,
       languages,
       password,
       recovery_email,
